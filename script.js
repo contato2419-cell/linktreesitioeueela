@@ -94,14 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnShareTop) btnShareTop.addEventListener('click', handleShare);
   if (btnShareBottom) btnShareBottom.addEventListener('click', handleShare);
 
-  // 3. Copy Link Action
-  if (btnCopyPageLink) {
-    btnCopyPageLink.addEventListener('click', () => {
-      copyToClipboard(getPageUrl(), 'Link oficial copiado!');
-    });
-  }
-
-  // 4. QR Code Modal
+  // 3. QR Code Modal
   const openQrModal = () => {
     const currentUrl = getPageUrl();
     qrUrlText.textContent = currentUrl;
@@ -142,37 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
     btnModalCopyLink.addEventListener('click', () => {
       copyToClipboard(getPageUrl(), 'Link copiado!');
       closeQr();
-    });
-  }
-
-  // 5. Save Contact (.vcf vCard)
-  if (btnSaveContact) {
-    btnSaveContact.addEventListener('click', () => {
-      const vcardData = [
-        'BEGIN:VCARD',
-        'VERSION:3.0',
-        'FN:Sítio Eu & Ela (Sr. Eduardo)',
-        'ORG:Sítio Eu & Ela',
-        'TITLE:Espaço de Festas e Eventos',
-        'TEL;TYPE=CELL,VOICE,PREF:+5521964553218',
-        'TEL;TYPE=WHATSAPP:+5521964553218',
-        'ADR;TYPE=WORK:;;Tv. do Matadouro, 18;Santa Cruz;RJ;23550-132;Brasil',
-        'URL;TYPE=WEBSITE:https://sitioeueela.vercel.app/',
-        'NOTE:Espaço de Festas, Casamentos, 15 Anos, Piscina, Camarim e Confraternização em Santa Cruz - RJ',
-        'END:VCARD'
-      ].join('\r\n');
-
-      const blob = new Blob([vcardData], { type: 'text/vcard;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const downloadLink = document.createElement('a');
-      downloadLink.href = url;
-      downloadLink.download = 'Sitio-Eu-e-Ela-Contato.vcf';
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
-      URL.revokeObjectURL(url);
-
-      showToast('Cartão de contato baixado!');
     });
   }
 });
