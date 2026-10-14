@@ -1,52 +1,141 @@
 /**
- * SÍTIO EU & ELA - LINKTREE SCRIPT
- * Interactivity: Share, QR Code, VCard, Toast, Accordion
+ * SÍTIO EU & ELA — INTERACTIVE LINKTREE SCRIPT
+ * Hero Photo Slider (Touch + Auto + Navigation) & Share Actions
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-  const DEFAULT_SHARE_URL = 'https://linktreesitioeueela.vercel.app/';
-  const getPageUrl = () => {
-    return (window.location.origin && window.location.origin !== 'null' && !window.location.origin.includes('file:')) 
-      ? window.location.href 
-      : DEFAULT_SHARE_URL;
+  // ---------------------------------------------------------
+  // 1. HERO PHOTO CAROUSEL / SLIDER
+  // ---------------------------------------------------------
+  const track = document.getElementById('sliderTrack');
+  const slides = document.querySelectorAll('.slider-slide');
+  const dots = document.querySelectorAll('.dot-btn');
+  const prevBtn = document.getElementById('prevSlide');
+  const nextBtn = document.getElementById('nextSlide');
+  const sliderCard = document.querySelector('.hero-slider-card');
+
+  let currentIndex = 0;
+  const totalSlides = slides.length;
+  let autoSlideInterval = null;
+  const AUTO_DELAY = 3800; // 3.8 seconds
+
+  const updateSlider = (index) => {
+    currentIndex = (index + totalSlides) % totalSlides;
+    if (track) {
+      track.style.transform = `translateX(-${currentIndex * 100}%)`;
+    }
+    dots.forEach((dot, idx) => {
+      dot.classList.toggle('active', idx === currentIndex);
+    });
   };
 
-  // Elements
-  const accordionWrapper = document.getElementById('accordionWrapper');
-  const btnToggleEvents = document.getElementById('btnToggleEvents');
-  const btnShareTop = document.getElementById('btnShareTop');
-  const btnShareBottom = document.getElementById('btnShareBottom');
-  const btnCopyPageLink = document.getElementById('btnCopyPageLink');
-  const btnQrCodeTop = document.getElementById('btnQrCodeTop');
-  const btnSaveContact = document.getElementById('btnSaveContact');
-  const qrModal = document.getElementById('qrModal');
-  const closeQrModal = document.getElementById('closeQrModal');
-  const qrCodeContainer = document.getElementById('qrCodeContainer');
-  const qrUrlText = document.getElementById('qrUrlText');
-  const btnModalCopyLink = document.getElementById('btnModalCopyLink');
-  const toast = document.getElementById('toastNotification');
-  const toastMsg = document.getElementById('toastMessage');
+  const startAutoSlide = () => {
+    stopAutoSlide();
+    autoSlideInterval = setInterval(() => {
+      updateSlider(currentIndex + 1);
+    }, AUTO_DELAY);
+  };
 
-  let toastTimeout = null;
+  const stopAutoSlide = () => {
+    if (autoSlideInterval) {
+      clearInterval(autoSlideInterval);
+      autoSlideInterval = null;
+    }
+  };
 
-  // Show Toast
-  const showToast = (message = 'Link copiado com sucesso!') => {
-    if (toastTimeout) clearTimeout(toastTimeout);
-    toastMsg.textContent = message;
+  if (prevBtn) {
+    prevBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      updateSlider(currentIndex - 1);
+      startAutoSlide();
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      updateSlider(currentIndex + 1);
+      startAutoSlide();
+    });
+  }
+
+  dots.forEach((dot) => {
+    dot.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const targetIndex = parseInt(dot.getAttribute('data-index') || '0', 10);
+      updateSlider(targetIndex);
+      startAutoSlide();
+    });
+  });
+
+  // Touch Swipe Support for Mobile
+  let startX = 0;
+  let currentX = 0;
+  let isDragging = false;
+
+  if (sliderCard) {
+    sliderCard.addEventListener('mouseenter', stopAutoSlide);
+    sliderCard.addEventListener('mouseleave', startAutoSlide);
+
+    sliderCard.addEventListener('touchstart', (e) => {
+      stopAutoSlide();
+      startX = e.touches[0].clientX;
+      isDragging = true;
+    }, { passive: true });
+
+    sliderCard.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+      currentX = e.touches[0].clientX;
+    }, { passive: true });
+
+    sliderCard.addEventListener('touchend', () => {
+      if (!isDragging) return;
+      isDragging = false;
+      const diffX = startX - currentX;
+      if (Math.abs(diffX) > 40) {
+        if (diffX > 0) {
+          updateSlider(currentIndex + 1);
+        } else {
+          updateSlider(currentIndex - 1);
+        }
+      }
+      startAutoSlide();
+    });
+  }
+
+  // Initial kick-off
+  updateSlider(0);
+  startAutoSlide();
+
+  // ---------------------------------------------------------
+  // 2. SHARE & TOAST
+  // ---------------------------------------------------------
+  const toast = document.getElementById('toastBox');
+  const toastMsg = document.getElementById('toastMsg');
+  const btnShare = document.getElementById('btnShare');
+  let toastTimer = null;
+
+  const showToast = (message) => {
+    if (!toast) return;
+    if (toastTimer) clearTimeout(toastTimer);
+    if (toastMsg) toastMsg.textContent = message;
     toast.classList.add('show');
-    toastTimeout = setTimeout(() => {
+    toastTimer = setTimeout(() => {
       toast.classList.remove('show');
-    }, 3000);
+    }, 3200);
   };
 
-  // Copy to clipboard helper
-  const copyToClipboard = async (text, successMsg = 'Link copiado para a área de transferência!') => {
+  const copyPageLink = async () => {
+    const url = window.location.href.includes('http')
+      ? window.location.href
+      : 'https://linktreesitioeueela.vercel.app/';
+    
     try {
       if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(text);
+        await navigator.clipboard.writeText(url);
       } else {
         const textarea = document.createElement('textarea');
-        textarea.value = text;
+        textarea.value = url;
         textarea.style.position = 'fixed';
         textarea.style.left = '-9999px';
         document.body.appendChild(textarea);
@@ -54,87 +143,36 @@ document.addEventListener('DOMContentLoaded', () => {
         document.execCommand('copy');
         document.body.removeChild(textarea);
       }
-      showToast(successMsg);
-    } catch (err) {
-      console.warn('Falha ao copiar:', err);
-      showToast('Link: ' + text);
+      showToast('Link copiado com sucesso!');
+    } catch {
+      showToast('Link: ' + url);
     }
   };
 
-  // 1. Accordion Toggle
-  if (btnToggleEvents && accordionWrapper) {
-    btnToggleEvents.addEventListener('click', () => {
-      const isOpen = accordionWrapper.classList.toggle('open');
-      btnToggleEvents.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-    });
-  }
+  if (btnShare) {
+    btnShare.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const url = window.location.href.includes('http')
+        ? window.location.href
+        : 'https://linktreesitioeueela.vercel.app/';
 
-  // 2. Share Action (Native or Copy Fallback)
-  const handleShare = async () => {
-    const url = getPageUrl();
-    const shareData = {
-      title: 'Sítio Eu & Ela | Festas, Casamentos e Lazer',
-      text: 'Conheça o Sítio Eu & Ela em Santa Cruz - RJ! Orçamentos rápidos e estrutura completa:',
-      url: url
-    };
+      const shareData = {
+        title: 'Sítio Eu & Ela | Espaço para Festas e Eventos',
+        text: 'Conheça o Sítio Eu & Ela em Santa Cruz - RJ! Orçamentos rápidos e estrutura completa:',
+        url: url
+      };
 
-    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-      try {
-        await navigator.share(shareData);
-      } catch (err) {
-        if (err.name !== 'AbortError') {
-          copyToClipboard(url, 'Link do Sítio copiado!');
+      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        try {
+          await navigator.share(shareData);
+        } catch (err) {
+          if (err.name !== 'AbortError') {
+            copyPageLink();
+          }
         }
+      } else {
+        copyPageLink();
       }
-    } else {
-      copyToClipboard(url, 'Link do Sítio copiado com sucesso!');
-    }
-  };
-
-  if (btnShareTop) btnShareTop.addEventListener('click', handleShare);
-  if (btnShareBottom) btnShareBottom.addEventListener('click', handleShare);
-
-  // 3. QR Code Modal
-  const openQrModal = () => {
-    const currentUrl = getPageUrl();
-    qrUrlText.textContent = currentUrl;
-    
-    // Inject QR Code Image
-    qrCodeContainer.innerHTML = '';
-    const qrImg = document.createElement('img');
-    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(currentUrl)}&color=0c120e&bgcolor=ffffff`;
-    qrImg.alt = 'QR Code Sítio Eu & Ela';
-    qrImg.loading = 'eager';
-    qrCodeContainer.appendChild(qrImg);
-
-    qrModal.classList.add('open');
-    qrModal.setAttribute('aria-hidden', 'false');
-  };
-
-  const closeQr = () => {
-    qrModal.classList.remove('open');
-    qrModal.setAttribute('aria-hidden', 'true');
-  };
-
-  if (btnQrCodeTop) btnQrCodeTop.addEventListener('click', openQrModal);
-  if (closeQrModal) closeQrModal.addEventListener('click', closeQr);
-  
-  if (qrModal) {
-    qrModal.addEventListener('click', (e) => {
-      if (e.target === qrModal) closeQr();
-    });
-  }
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && qrModal.classList.contains('open')) {
-      closeQr();
-    }
-  });
-
-  if (btnModalCopyLink) {
-    btnModalCopyLink.addEventListener('click', () => {
-      copyToClipboard(getPageUrl(), 'Link copiado!');
-      closeQr();
     });
   }
 });
