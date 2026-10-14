@@ -10,14 +10,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const track = document.getElementById('sliderTrack');
   const slides = document.querySelectorAll('.slider-slide');
   const dots = document.querySelectorAll('.dot-btn');
-  const prevBtn = document.getElementById('prevSlide');
-  const nextBtn = document.getElementById('nextSlide');
   const sliderCard = document.querySelector('.hero-slider-card');
 
   let currentIndex = 0;
   const totalSlides = slides.length;
   let autoSlideInterval = null;
-  const AUTO_DELAY = 3800; // 3.8 seconds
+  const AUTO_DELAY = 3200; // 3.2 seconds automatic rotation
 
   const updateSlider = (index) => {
     currentIndex = (index + totalSlides) % totalSlides;
@@ -42,22 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
       autoSlideInterval = null;
     }
   };
-
-  if (prevBtn) {
-    prevBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      updateSlider(currentIndex - 1);
-      startAutoSlide();
-    });
-  }
-
-  if (nextBtn) {
-    nextBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      updateSlider(currentIndex + 1);
-      startAutoSlide();
-    });
-  }
 
   dots.forEach((dot) => {
     dot.addEventListener('click', (e) => {

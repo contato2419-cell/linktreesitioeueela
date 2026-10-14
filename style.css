@@ -161,38 +161,6 @@ body {
   backdrop-filter: blur(8px);
 }
 
-/* Carousel controls */
-.slider-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 36px;
-  height: 36px;
-  background-color: rgba(255, 255, 255, 0.9);
-  border: 1px solid #000000;
-  color: #000000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 5;
-  transition: all 0.2s ease;
-  box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 0.8);
-}
-
-.slider-btn:hover {
-  background-color: #000000;
-  color: #ffffff;
-}
-
-.slider-btn.prev {
-  left: 12px;
-}
-
-.slider-btn.next {
-  right: 12px;
-}
-
 /* Dots / Indicators */
 .slider-dots {
   position: absolute;
